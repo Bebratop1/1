@@ -1,1 +1,139 @@
-
+<!DOCTYPE HTML>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <title>TouchVPN</title>
+  </head>
+  <body>
+<section id="main" class="main-section">
+    <div class="main-section__circle-wrapper">
+      <div class="main-section__circle-wrapper-inner">
+        <div class="main-section__circle"></div>
+      </div>
+    </div>
+    <div class="main-section__inner">
+      <div class="main-section__left">
+        <div class="main-section__status-wrapper">
+          <div class="main-section__status-wrapper-progress">
+            <svg width="5" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100%" height="100%" fill="none" stroke="#007AFF" stroke-width="1" stroke-dasharray="5" stroke-dashoffset="0" stroke-linecap="square"></rect>
+            </svg>
+          </div>
+          <div id="status-real" class="main-section__status-wrapper-row">
+            <div class="main-section__status-wrapper-checkbox"></div>
+            <div class="main-section__status-wrapper-value">
+              <div class="main-section__status">
+                <span class="main-section__status-title">Your real status:</span>
+                <span id="status" class="main-section__status-name">Unprotected</span>
+              </div>
+              <div class="main-section__info">
+                <div class="main-section__info-field">
+                  <span>IP:</span>
+                  <span id="ip-real" class="main-section__info-field-name"></span>
+                </div>
+                <div class="main-section__info-field main-section__info-field_isp">
+                  <span>ISP:</span>
+                  <span id="isp-real" class="main-section__info-field-name"></span>
+                </div>
+                <div class="main-section__info-field">
+                  <span>Location:</span>
+                  <span id="location-real" class="main-section__info-field-name main-section__info-field-name_location"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="status-touch" class="main-section__status-wrapper-row main-section__status-wrapper-row_disabled">
+            <div class="main-section__status-wrapper-checkbox"></div>
+            <div class="main-section__status-wrapper-value">
+              <div class="main-section__status">
+                <span class="main-section__status-title">Your Touch VPN status:</span>
+                <span id="status-touch-name" class="main-section__status-name main-section__status-name_changed"></span>
+              </div>
+              <div id="status-touch-info" class="main-section__info main-section__info_hidden">
+                <div class="main-section__info-field">
+                  <span>IP:</span>
+                  <span id="ip" class="main-section__info-field-name"></span>
+                </div>
+                <div class="main-section__info-field main-section__info-field_isp">
+                  <span>ISP:</span>
+                  <span id="isp" class="main-section__info-field-name"></span>
+                </div>
+                <div class="main-section__info-field">
+                  <span>Location:</span>
+                  <span id="location" class="main-section__info-field-name main-section__info-field-name_location"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="main-section__content-wrapper">
+          <div class="main-section__title">
+            TOUCH VPN
+          </div>
+          <div class="main-section__desc">
+            The VPN service that keeps your phone, tablet &amp; desktop secure &amp; private
+          </div>
+          <div>
+            <a href="./platform.html" class="button button_large js--app-link" target="_blank">
+              Get TOUCH VPN
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="main-section__right">
+        <div class="main-section__scale-circle-wrapper">
+          <div class="main-section__scale-circle"></div>
+        </div>
+        <div class="app-screen">
+          <div class="app-screen__inner">
+            <div class="app-screen__header">
+              <img src="./images/icons/burger-menu.svg" alt="menu">
+              <span>Touch VPN</span>
+              <img src="./images/icons/share.svg" alt="share">
+            </div>
+            <div class="app-screen__location">
+              You are in <span class="app-screen__location-name">Russia</span>
+            </div>
+            <div id="switch-title" class="app-screen__switch-title">
+              Switch location to
+            </div>
+            <div id="chosen-location" class="app-screen__choosen-location">
+              United Kingdom
+              <img src="./images/icons/dropdown-arrow.svg" alt="arrow">
+            </div>
+            <div class="app-screen__map-wrapper">
+              <div class="app-screen__inner-circle">
+                <div class="app-screen__inner-circle_left"><span></span></div>
+                <div class="app-screen__inner-circle_right"><span></span></div>
+              </div>
+              <div class="app-screen__outher-circle">
+                <div class="app-screen__outher-circle_left"><span></span></div>
+                <div class="app-screen__outher-circle_right"><span></span></div>
+              </div>
+              <div id="connect-btn" class="app-screen__connect-btn">
+                Connect
+                <div class="app-screen__scale-circle"></div>
+              </div>
+            </div>
+            <div class="app-screen__data">
+              <div class="app-screen__data-item">
+                <div class="app-screen__data-title">
+                  4.6 <span class="app-screen__data-metric">KB</span>
+                </div>
+                <div class="app-screen__data-desc">Incoming</div>
+              </div>
+              <div class="app-screen__data-separator"></div>
+              <div class="app-screen__data-item">
+                <div class="app-screen__data-title">
+                  9.3 <span class="app-screen__data-metric">KB</span>
+                </div>
+                <div class="app-screen__data-desc">Outcoming</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </body>
+</html>
