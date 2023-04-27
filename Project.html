@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <title>Мой Проект</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="RadikGuk">
+        <meta property="og:url" content="http://usefuljs.net/fractals/index.html">
+        <meta property="og:title" content="Online Fractal Generator">
+        <meta property="og:image" content="http://usefuljs.net/fractals/images/julia_z1.5-0.1948.png">
+        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <!--link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css"-->
+        <link rel="stylesheet" href="../css/style.css">
+        <style type="text/css">
+            FORM {
+            }
+            
+            #playingField {
+                height : 644px;
+                border: 1px solid rgb(200, 200, 200);
+                background-color: rgb(248, 248, 248);
+                position : relative;
+                margin : 1em auto 0;
+                padding : 9px;
+            }
+            
+            #canvas {
+                float : left;
+                height : 624px;
+                width : 832px;
+                background-color : white;
+                border : 1px solid rgb(200, 200, 200);
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select : none;
+            }
+            
+            #help_bar {
+                width : 600px;
+            }
+            
+            #controls {
+                padding : 0 10px 10px;
+                float : right;
+                width : 282px;
+                height : 624px;
+                border : 1px solid rgb(200, 200, 200);
+                position : relative;
+            }
+            
+            #btnGroup {
+                position : absolute;
+                bottom : 0;
+                right : 0;
+                padding : 10px;
+                text-align : right;
+                width : 280px;
+            }
+            
+            BUTTON {
+                margin-left : 3px;
+            }
+            
+            .control {
+                width : 100%;
+                background-color : white;
+                padding : 1px;
+                overflow : auto;
+            }
+            
+            .control.numeric, INPUT.numeric {
+                text-align : right;
+            }
+            
+            .control.error, INPUT.error {
+                color : red;
+            }
+            
+            #playingField SELECT, #playingField INPUT[type="text"] {
+                width : 100%;
+            }
+            
+            #mandel_info {
+                margin-top : 0.25em;
+            }
+            
+            .alert {
+                margin-bottom : 0px!important;
+            }
+            
+            LABEL {
+                padding-top : 5px!important;
+            }
+            
+            #linkBar {
+                text-align : right;
+                margin-top : 5px;
+            }
+            
+            SMALL {
+                vertical-align : text-top;
+                margin : 0 2px;
+            }
+            
+            #shareDlg, #advancedDlg {
+                width : 500px;
+            }
+            
+            TEXTAREA {
+                border : 1px solid rgb(200, 200, 200);
+                font-family : monospace;
+            }
+            
+            .no-js .container, .js .no-js {
+                display : none;
+            }
+            
+            .nojs-warning, .nohtml5-warning {
+                width : 450px;
+                margin : 2em auto;
+            }
+            
+            IFRAME {
+                border : 1px solid rgb(200, 200, 200);
+            }
+            
+            INPUT[type="radio"], INPUT[type="checkbox"] {
+                margin-right : 6px;
+            }
+            
+            .advancedTab {
+                border-color : #DDD;
+                border-style : solid;
+                border-width : 0 1px 1px;
+                padding : 9px;
+                height : 230px;
+            }
+            
+            #advancedOptions LABEL {
+                font-weight : normal;
+            }
+            
+            #advancedOptions LABEL.inputLbl {
+                width : 170px;
+                margin-right : 6px;
+            }
+            
+            #advancedOptions TEXTAREA {
+                width : 100%;
+                height : 168px;
+            }
+            
+            #customPalette {
+                position : relative;
+            }
+            
+            #customPalette DIV.buttons {
+                position : absolute;
+                bottom : 0;
+                padding-bottom : 9px;
+            }
+            
+            #overview_p {
+                display : none;
+            }
+            
+            .twitter-share-button {
+                margin-top: -3px;
+                vertical-align: middle;
+            }
+        </style>
+        <script src="../lib/modernizr.js"></script>
+    </head>
+    <body>
+        <div class="container" id="container">
+            <p id="overview_p">The Online Fractal Generator is a web application for generating
+            fractals using JavaScript, canvas and web workers. Formulae: Mandelbrot set, Julia
+            sets, Multibrot sets and multijulia sets for any power of z, Newtonian fractals
+            for any polynomial, Phoenix fractal, rational maps, Burning Ship fractal and Julia sets.</p>
+            <form class="form-horizontal" id="playingField">
+                <canvas id="canvas" width="832" height="624">
+                </canvas>
+                <div id="controls">
+                    <label class="control-label">Select a fractal and click "Reset":</label>
+                    <select id="fractals"></select>
+                    <div id="fractal_params" style="display:none;">
+                        <div id="julia_constants" class="fractal_parameters">
+                            <label class="control-label">Julia constant:</label><br>
+                            <input type="text" id="julia_c" value="0"
+                                title="Value of the Julia constant; you can specify a complex number by using the form 1+2i">
+                        </div>
+                        <div id="mandel_info" class="fractal_parameters" style="display:none;">
+                            <div class="alert alert-info">
+                            Hold down the shift key and click on a point in the Mandelbrot 
+                            set to view the corresponding Julia set. Click 
+                            "Back" to return.
+                            </div>
+                        </div>
+                        <div id="polynomial_exponent" class="fractal_parameters" style="display:none;">
+                            <label class="control-label">Exponent:</label><br>
+                            <input type="text" id="exponent" value="0">
+                        </div>
+                        <div id="polynomial_terms" class="fractal_parameters" style="display:none;">
+                            <label class="control-label">Polynomial terms:</label><br>
+                            <input type="text" id="terms"
+                                title="Enter a list of polynomial terms, for example, 3,0,0,1 to solve 3z³ + 1 = 0;  you can use complex numbers for the terms by using rectangular form 1+2i">                       
+                        </div>
+                        <div id="relaxation_parameter" class="fractal_parameters" style="display:none;">
+                            <label class="control-label">Relaxation parameter:</label><br>
+                            <input type="text" id="rparam"
+                                title="Value of the relaxation parameter for convergent functions; you can specify a complex number by using the form 1+2i">                       
+                        </div>
+                        <div id="phoenix_constant" class="fractal_parameters" style="display:none;">
+                            <label class="control-label">Phoenix constant:</label><br>
+                            <input type="text" id="pparam"
+                                title="Multiplicative constant for the previous value in the iteration; you can specify a complex number by using the form 1+2i">                       
+                        </div>
+                        <div id="startz_parameter" class="fractal_parameters" style="display:none;">
+                            <label class="control-label">Start value:</label><br>
+                            <input type="text" id="startz"
+                                title="Constant start value for the Nova iteration; you can specify a complex number by using the form 1+2i; you can use &quot;c&quot; to use the pixel value">                       
+                        </div>
+                        <div id="rmap_parameters" class="fractal_parameters" style="display:none;">
+                            <label class="control-label">First exponent:</label><br>
+                            <input type="text" id="rm_exponent_1" value="0" title="Enter an integer value &gt;= 2"><br>
+                            <label class="control-label">Second exponent:</label><br>
+                            <input type="text" id="rm_exponent_2" value="0" title="Enter an integer value &lt; 0"><br>
+                            <label class="control-label">Lambda constant:</label><br>
+                            <input type="text" id="rm_lambda" value="0" title="Value of the multiplier for the second exponent; you can specify a complex number by using the form 1+2i"><br>
+                        </div>
+                    </div>
+                    <label class="control-label">Minimum real value:</label>
+                    <div class="control numeric" id="minX">0</div>
+                    <label class="control-label">Maximum real value:</label>
+                    <div class="control numeric" id="maxX">0</div>
+                    <label class="control-label">Maximum imaginary value:</label>
+                    <div class="control numeric" id="maxY">0</div>
+                    <label class="control-label">Minimum imaginary value:</label>
+                    <div class="control numeric" id="minY">0</div>
+                    <label class="control-label">Scale:</label>
+                    <div class="control numeric" id="scale">0</div>
+                    <label class="control-label">Render time:</label>
+                    <div class="control numeric" id="rTime">0 ms</div>
+                    <div class="progress" style="display:none;" id="pOuter">
+                        <div class="progress-bar" role="progressbar" aria-valuenow="0" 
+                            aria-valuemin="0" aria-valuemax="100" style="width: 0%;"
+                            id="pInner">
+                        </div>
+                    </div>
+                    <div id="btnGroup">
+                        <button type="button" id="refreshBtn" class="btn btn-primary btn-disabled" title="Return to the Mandelbrot set" disabled>
+                            &lt; Back
+                        </button>
+                        <button type="button" id="zoomOutBtn" class="btn btn-primary btn-disabled" title="Zoom out" disabled>
+                            <span class="glyphicon glyphicon-zoom-out"></span>
+                        </button>
+                        <button type="button" id="exportBtn" class="btn btn-primary" title="Export as a PNG image">
+                            <span class="glyphicon glyphicon-picture"></span>
+                        </button>
+                        <button type="submit" id="resetBtn" class="btn btn-primary">Reset</button>
+                    </div>
+                </div>
+            </form>
+            <div id="linkBar">
+                <a id="advancedCtl" href="#">Advanced</a><small> | </small>
+                <a id="shareCtl" href="#">Share</a><small> | </small>
+                <a id="helpCtl" href="help.html">Help</a><small> | </small>
+                <a id="learnCtl" href="docs/index.html" target="_blank">Learn more</a><small> | </small>
+                <a id="aboutCtl" href="about.html">About</a><small> | </small>
+                <div class="fb-like" 
+                data-href="http://usefuljs.net/fractals/index.html" data-width="120" 
+                data-layout="button_count" data-action="like" data-show-faces="true"
+                data-share="true"></div><small> | </small>
+                <a href="https://twitter.com/share" class="twitter-share-button"></a>
+            </div>
+        </div>
+        <div id="shareDlg" class="panel panel-default popup-dlg" style="display:none;">
+            <div class="panel-heading">
+                <button class="close" type="button" onclick="Popup.hide('shareDlg');">&times;</button>
+                <b>Share This Image</b>
+            </div>
+            <div class="panel-body">
+                <p>Copy the URL below to create a link to the current fractal image</p>
+                <textarea id="imageUrl" rows="8" readonly wrap="soft" style="width:100%">http://</textarea>
+            </div>
+            <div class="panel-footer button-bar">
+                <button type="button" class="btn btn-default" onclick="Popup.hide('shareDlg');">Close</button> 
+            </div>
+        </div>
+        <div id="helpDlg" class="panel panel-default popup-dlg" style="display:none;">
+            <div class="panel-heading">
+                <button class="close" type="button" onclick="Popup.hide('helpDlg');">&times;</button>
+                <b id="helpHdr"></b>
+            </div>
+            <div class="panel-body">
+                <iframe id="helpContent" width="500" height="300" seamless"></iframe>
+            </div>
+            <div class="panel-footer button-bar">
+                <button type="button" class="btn btn-default" onclick="Popup.hide('helpDlg');">Close</button> 
+            </div>
+        </div>
+        <div id="errDlg" class="panel panel-default popup-dlg" style="display:none;">
+            <div class="panel-heading">
+                <button class="close" type="button" onclick="Popup.hide('errDlg');">&times;</button>
+                <b>Error</b>
+            </div>
+            <div class="panel-body">
+                <p id="errReport"></p>
+            </div>
+            <div class="panel-footer button-bar">
+                <button type="button" class="btn btn-default" onclick="Popup.hide('errDlg');">OK</button> 
+            </div>
+        </div>
+        <div id="msgDlg" class="panel panel-default popup-dlg" style="display:none;">
+            <div class="panel-heading">
+                <button class="close" type="button" onclick="Popup.hide('msgDlg');">&times;</button>
+                <b>Message</b>
+            </div>
+            <div class="panel-body">
+                <p id="msgReport"></p>
+            </div>
+            <div class="panel-footer button-bar">
+                <button type="button" class="btn btn-default" onclick="Popup.hide('msgDlg');">OK</button> 
+            </div>
+        </div>
+        <div id="advancedDlg" class="panel panel-default popup-dlg" style="display:none;">
+            <div class="panel-heading">
+                <button class="close" type="button" onclick="Popup.hide('advancedDlg');">&times;</button>
+                <b>Advanced Options</b>
+            </div>
+            <form class="form-horizontal" id="advancedOptions">
+                <div class="panel-body">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a href="#visualization" data-toggle="tab">Visualization</a></li>
+                            <li><a href="#imgQuality" data-toggle="tab">Image Quality</a></li>
+                            <li><a href="#viewport" data-toggle="tab">Viewport</a></li>
+                            <li><a href="#customPalette" data-toggle="tab">Palette</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane active advancedTab" id="visualization">
+                                <label class="inputLbl" for="usePalette">Select the palette</label><select
+                                    id="usePalette"></select><br>
+                                <label><input type="radio" name="extColouring" id="extColouring_dwell">Colour the set exterior by iteration value</label><br>
+                                <label><input type="radio" name="extColouring" id="extColouring_none">Don't colour the set exterior</label><br>
+                                <label><input type="radio" name="extColouring" id="extColouring_basin">Colour the basins of attraction (Newtonian fractal only)</label><br>
+                                <label><input type="checkbox" id="reverseVideo">Reverse the colours of the set boundary and interior</label><br>
+                                <label class="inputLbl" for="colourAngle">Rotate colours by</label><input 
+                                    type="text" id="colourAngle" size="8" class="numeric" title="Enter a value between 0 and 360">°<br>
+                            </div>
+                            <div class="tab-pane advancedTab" id="imgQuality">
+                                <label class="inputLbl" for="escapeValue">Escape value</label><input 
+                                    type="text" id="escapeValue" size="8" class="numeric" title="Enter a value &gt;= 2 for divergent formulae and a value &lt; 1 for convergent"><br>
+                                <label class="inputLbl" for="iterations">Iteration count</label><input 
+                                    type="text" id="iterations" size="8" class="numeric" title="Enter a positive value"><br>
+                                <label class="inputLbl" for="maxColours">Maximum palette size</label><input 
+                                    type="text" id="maxColours" size="8" class="numeric" title="Enter a positive value or 0 for unlimited"><br>
+                                <label class="inputLbl" for="boundaryFraction">Boundary fraction</label><input 
+                                    type="text" id="boundaryFraction" size="8" class="numeric" title="Enter a value &gt; 0"><br>                   
+                                <label class="inputLbl" for="imageWidth">Image width</label><input 
+                                    type="text" id="imageWidth" size="8" class="numeric" title="Enter a positive value divisible by 4"><br>
+                                <label class="inputLbl">Image height</label><input 
+                                    type="text" id="imageHeight" size="8" class="numeric" readonly><br>
+                                <label><input type="checkbox" id="antialias">Apply anti-aliasing</label><br>
+                            </div>
+                            <div class="tab-pane advancedTab" id="viewport">
+                                <label class="inputLbl" for="pixelsLeft">Shift image left</label><input 
+                                    type="text" id="pixelsLeft" size="12" class="numeric" title="Enter an integer value"> pixels<br>
+                                <label class="inputLbl" for="pixelsUp">Shift image up</label><input 
+                                    type="text" id="pixelsUp" size="12" class="numeric" title="Enter an integer value"> pixels<br>
+                                <label class="inputLbl" for="centrePoint">Centre point</label><input 
+                                    type="text" id="centrePoint" size="12" class="numeric" title="Enter a complex number"><br>
+                                <label class="inputLbl" for="zoomValue">Zoom</label><input 
+                                    type="text" id="zoomValue" size="12" class="numeric" title="Enter a value &gt; 0">&nbsp;&times;<br>                   
+                            </div>
+                            <div class="tab-pane advancedTab" id="customPalette">
+                                <textarea id="customPaletteText" 
+                                    placeholder="Create your own custom palette or click &quot;Tweak&quot; to customise the currently selected one. Click &quot;Check&quot; to check the syntax."
+                                ></textarea>
+                                <div class="buttons">
+                                    <button type="button" class="btn btn-default" id="exportPaletteBtn">Tweak</button>
+                                    <button type="button" class="btn btn-default" id="checkPaletteBtn">Check</button>
+                                    <button type="button" class="btn btn-default" onclick="Dojo.ele('customPaletteText').value=''">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                <div class="panel-footer button-bar">
+                    <button type="submit" id="advancedOKBtn" class="btn btn-primary">OK</button> 
+                    <button type="button" class="btn btn-default" onclick="Popup.hide('advancedDlg');">Cancel</button> 
+                </div>
+            </form>
+        </div>
+        <div class="no-js nojs-warning">
+            <h3>JavaScript is not enabled</h3>
+            <p>This is an application written in JavaScript. You need to enable scripting to use it.</p>
+        </div>
+        <div id="featuresLacking" class="nohtml5-warning" style="display:none;">
+            <h3>Your current browser can't run this page</h3>
+            <p>This application requires certain browser features that your browser does not support.</p>
+            <p>You may want to upgrade it to a more modern version. 
+            <a href="http://www.mozilla.org/en-US/firefox/new/">This</a>
+            will work, as will <a href="https://www.google.com/intl/en_uk/chrome/browser/">this</a>, 
+            <a href="http://www.opera.com/">this</a> or even 
+            <a href="http://windows.microsoft.com/en-gb/internet-explorer/download-ie">this</a>.</p>            
+        </div>
+        <script src="../lib/common.js"></script>
+        <script src="../lib/popup.js"></script>
+        <script src="../built/UsefulJS-min-latest.js"></script>
+        <script src="http://code.jquery.com/jquery.js"></script>
+        <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+        <!-- Social media functionality -->
+        <div id="fb-root"></div>
+        <script>
+        (function(d, s) {
+            var m = {
+                'facebook-jssdk' : 'connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.5',
+                'twitter-wjs' : 'platform.twitter.com/widgets.js'
+            }, pr = (':' === d.location.protocol.charAt(4)) ? 'http' : 'https', id,
+            js, fjs = d.getElementsByTagName(s)[0];
+            for (id in m) {
+                if (!d.getElementById(id)) {
+                    js = d.createElement(s);
+                    js.id = id;
+                    js.src = pr + '://' + m[id];
+                    fjs.parentNode.insertBefore(js, fjs);
+                }
+            }
+        })(document, 'script');
+        </script>
+        <script type="text/javascript">
+window.onload = function() {
+    "use strict";
+    // Check for necessary support
+    if (!(Modernizr.canvas && Modernizr.webworkers)) {
+        Dojo.show("container", false);
+        Dojo.show("featuresLacking", true);
+        return;
+    }
+    
+    // Cross-browser support
+    var _u = UsefulJS, _evt = _u.Event;
+    _u.fix();
+    
+    // Seen support for canvas and workers, but not requestAnimationFrame
+    var _requestAnimationFrame = window.requestAnimationFrame ||
+        function( callback ){
+            window.setTimeout(callback, 1000 / 60);
+        };   
+    
+    var F = {}, TCOUNT = 4, f = "mandel", zoomStack = [], mZoomStack = null,
+        customProps = {}, mCustomProps = null, worker, workers = [], i,
+        currentF = null;
+    for (i = 0; i < TCOUNT; i++) {
+        worker = new Worker("mandel-1.06.js");
+        worker.postMessage([i, "setId"]);
+        workers.push(worker);
+    } 
+    
+    // Posts messages to all workers
+    var notifyWorkers = function(params) {
+        for (i = 0; i < TCOUNT; i++) {
+            params.unshift(i);
+            workers[i].postMessage(params);
+            params.shift();
+        }
+    };   
+    
+    // Enables or disables the zoom interface
+    var enableZoomBtn = function(btnId, enable) {
+        var btn = Dojo.ele(btnId),
+            classList = btn.classList;
+        if (enable) {
+            classList.remove("btn-disabled");
+        }
+        else {
+            classList.remove("btn-disabled");
+        }
+        btn.disabled = !enable;
+    };
+    
+    var enableZoomInterface = function(enable) {
+        enableZoomBtn("zoomOutBtn", enable);
+    };
+    
+    // Report on the application state
+    var fmt = new Intl.NumberFormat(navigator.language, { maximumFractionDigits : 16 });
+    var report = function() {
+        Dojo.setText("minX", fmt.format(UsefulJS.Math.fcorrect(F.minX || 0, 5)), true);
+        Dojo.setText("maxX", fmt.format(UsefulJS.Math.fcorrect(F.maxX || 0, 5)), true);
+        Dojo.setText("minY", fmt.format(UsefulJS.Math.fcorrect(F.minY || 0, 5)), true);
+        Dojo.setText("maxY", fmt.format(UsefulJS.Math.fcorrect(F.maxY || 0, 5)), true);
+        Dojo.ele("scale").classList.remove("error");
+        var zoom = F.zoom;
+        if (zoom < 1) {
+            zoom = 1/zoom;
+        }
+        var zoomStr = zoom.toLocaleString(navigator.language, { maximumFractionDigits : 2 });
+        if (F.zoom >= 1) {
+            zoomStr += ":1";
+        }
+        else {
+            zoomStr = "1:" + zoomStr;
+        }
+        Dojo.setText("scale", zoomStr, true);
+        Dojo.setText("rTime", (F.renderTime || 0) + " ms", true);
+    };
+    
+    // Progress reporting
+    var pOuter = Dojo.ele("pOuter"), pInner = Dojo.ele("pInner");
+    
+    // Enables / disables the interface
+    var disableInterface = function() {
+        enableZoomBtn("refreshBtn", false);
+        enableZoomBtn("zoomOutBtn", false);
+        enableZoomBtn("exportBtn", false);
+        enableZoomBtn("resetBtn", false);
+        Dojo.setText(pInner, "", true);
+        pInner.style.width = "0%";
+        Dojo.show("rTime", false);
+        Dojo.show(pOuter, true);
+    };
+    var enableInterface = function() {
+        enableZoomBtn("refreshBtn", (mZoomStack !== null));
+        enableZoomBtn("zoomOutBtn", true);
+        enableZoomBtn("exportBtn", true);
+        enableZoomBtn("resetBtn", true);
+        Dojo.show(pOuter, false);
+        Dojo.show("rTime", true);
+    };
+    
+    // Drawing callbacks
+    var canvas = Dojo.ele("canvas"), w = canvas.width, h = canvas.height, 
+        ctx = canvas.getContext("2d"), imageData, pixels, rowsDrawn, lastPc,
+        startTime, elapsedTime;
+    var progressReport = function(timestamp) {
+        var str = lastPc + "%";
+        pInner.setAttribute("aria-valuenow", str);
+        pInner.style.width = str;
+        
+        if (lastPc > 10 && elapsedTime > 2000) {
+            Dojo.setText(pInner, str, true);
+        }
+        if (F.isDrawing) {
+            _requestAnimationFrame(progressReport);
+        }
+    };        
+    var initDrawing = function() {
+        w = canvas.width;
+        h = canvas.height;
+        imageData = ctx.createImageData(w, h);
+        pixels = imageData.data;
+        rowsDrawn = 0;
+        F.isDrawing = true;
+        lastPc = 0;
+        startTime = Date.now();
+        elapsedTime = 0;
+        disableInterface();
+        // Draw lines in parallel
+        var workerId;
+        // Divide the work into equal portions but allocate entire blocks to
+        // each worker; this is to allow anti-aliasing calculations to be reused
+        // for two lines of pixels
+        var perWorker = Math.floor(h / TCOUNT);
+        var remaining = h % TCOUNT;
+        var line = 0, i;
+        for (i = 0; i < TCOUNT; i++) {
+            var toDraw = perWorker;
+            if (remaining) {
+                ++toDraw;
+                --remaining;
+            }
+            workers[i].postMessage([i, "drawLines", w, h, line, line + toDraw]); 
+            line += toDraw;
+        }
+        _requestAnimationFrame(progressReport);
+    };
+    var drawingComplete = function() {
+        // Blit the image onto the canvas
+        ctx.putImageData(imageData, 0, 0);
+        delete(F.isDrawing);
+        imageData = pixels = null;
+        F.renderTime = Date.now() - startTime;
+        // Update the stats display
+        worker.postMessage([0, "getState"]);
+        enableInterface();
+    };
+    var updateImage = function(row, rowData) {
+        var offs = 4 * row * w, i;
+        for (i = 0; i < rowData.length; i++, offs++) {
+            pixels[offs] = rowData[i];
+        }
+        if (++rowsDrawn >= h) {
+            drawingComplete();
+        }
+        else {
+            elapsedTime = Date.now() - startTime;
+            lastPc = Math.floor(100 * rowsDrawn / h);
+        }
+    };
+    
+    //var initFn = F.initialize.bind(F, canvas);
+    
+    // What parameters go with which fractal type?
+    var fractalParams = {};
+    // What to read from the fractal definition when we select it
+    var fractalPropertyMap = {};
+    
+    // Populate select control and maps
+    var selCtl = Dojo.ele("fractals");
+    var makeSelectOptions = function(fractalDefs) {
+        var f;
+        fractalDefs.forEach(function(fractalDef, i) {
+            f = fractalDef.type;
+            fractalParams[f] = [];
+            if (fractalDef.isJulia) {
+                fractalParams[f].push("julia_constants");
+                fractalPropertyMap.julia_c = "juliaC";
+            }
+            else if (fractalDef.hasJulia) {
+                fractalParams[f].push("mandel_info");
+            }
+            if (fractalDef.hasExponent) {
+                // Has an exponent that we can configure
+                fractalParams[f].push("polynomial_exponent");
+                fractalPropertyMap.exponent = "P";
+            }
+            if (fractalDef.hasTerms) {
+                // Has polynomial terms that we can configure
+                fractalParams[f].push("polynomial_terms");
+                fractalPropertyMap.terms = "TERMS";
+            }
+            if (fractalDef.hasR) {
+                // Has relaxation parameter that we can configure
+                fractalParams[f].push("relaxation_parameter");
+                fractalPropertyMap.rparam = "R";
+            }
+            if (fractalDef.hasP) {
+                // Has Phoenix constant that we can configure
+                fractalParams[f].push("phoenix_constant");
+                fractalPropertyMap.pparam = "phoenixC";
+            }
+            if (fractalDef.hasStartZ) {
+                // Has Nova start value that we can configure
+                fractalParams[f].push("startz_parameter");
+                fractalPropertyMap.startz = "STARTZ";
+            }
+            if (fractalDef.hasRM) {
+                // Three additional parameters
+                fractalParams[f].push("rmap_parameters");
+                fractalPropertyMap.rm_exponent_1 = "RP";
+                fractalPropertyMap.rm_exponent_2 = "RP2";
+                fractalPropertyMap.rm_lambda = "RLAMBDA";
+            }
+            // Store for future reference
+            F[f] = fractalDef;
+            selCtl.add(new Option(fractalDef.name, f), selCtl.length);
+        });
+        selCtl.selectedIndex = 0;
+    };
+    
+    // Assembles the polynomial terms in the library representation to the UI one
+    var assembleTerms = function(terms) {
+        var i, uiTerms = [], str, rT, iT;
+        for (i = 0; i < terms.length; i += 2) {
+            rT = terms[i];
+            iT = terms[i + 1];
+            str = "";
+            if (iT) {
+                // Use the form 1+2i
+                if (rT) {
+                    str += rT;
+                    if (iT > 0) {
+                        str += "+";
+                    }
+                }
+                if (Math.abs(iT) !== 1) {
+                    str += iT;
+                }
+                else if (iT === -1) {
+                    str += "-";
+                }
+                str += "i";
+                uiTerms.push(str);
+            }
+            else {
+                uiTerms.push(rT);
+            }
+        }
+        return uiTerms.join(",");
+    };
+    
+    var assembleComplex = function(cParam) {
+        var str = "";
+        if (!(cParam[0] || cParam[1])) {
+            // 0,0i => "0"
+            return "0";
+        }
+        if (cParam[0]) {
+            str = cParam[0].toString();
+        }
+        if (cParam[1] && cParam[1] !== "0") {
+            if (str && cParam[1] > 0) {
+                str += "+";
+            }
+            if (Math.abs(cParam[1]) !== 1) {
+                str += cParam[1];
+            }
+            else if (cParam[1] === -1) {
+                str += "-";
+            }
+            str += "i";
+        }
+        return str;
+    };
+    
+    // Show parameters
+    var showParams = function() {
+        var frac = selCtl.value,
+            paramsCtl = Dojo.ele("fractal_params");
+        var pList = fractalParams[frac],
+            dList = paramsCtl.getElementsByClassName("fractal_parameters"),
+            i, e;
+        for (i = 0; i < dList.length; i++) {
+            e = dList[i];
+            // Assume the control is to be hidden
+            Dojo.show(e, false);
+            pList.some(function(eId) {
+                if (e.id === eId) {
+                    // Show it
+                    Dojo.show(e, true);
+                    return true;;
+                }
+                return false;
+            });
+        }
+        Dojo.show(paramsCtl, fractalParams[frac].length > 0);
+        var fractalDef = F[frac];
+        _u.forEach(fractalPropertyMap, function(p, field) {
+            if ((p in F) || (p in fractalDef)) {
+                // Prefer the current value rather than the base value
+                var uiRep = F[p] ? F[p] : fractalDef[p];
+                // Some internal representations need to be converted
+                switch (p) {
+                    case "juliaC":
+                    case "R":
+                    case "phoenixC":
+                    case "STARTZ":
+                    case "RLAMBDA":
+                        uiRep = assembleComplex(uiRep);
+                        break;
+                        
+                    case "TERMS":
+                        uiRep = assembleTerms(uiRep);
+                        break;
+                        
+                    default:
+                        break;
+                }
+                Dojo.ele(field).value = uiRep;
+            }
+        });
+    };
+    // Show / hide controls when the selection changes
+    _evt.register(selCtl, "change", showParams);
+    
+    // Parses a complex value
+    var parseComplex = function(v) {
+        // Get rid of all whitespace and turn +i or -i into +1i or -1i
+        v = v.trim().replace(/\s/g, "").replace(/([+-])(i)/, "$11$2");
+        if (v === "i") {
+            // Imaginary unit specified on its own
+            return [0, 1];
+        }       
+        // Parse out the first bit of the number
+        var rPart = parseFloat(v);
+        if (isNaN(rPart)) {
+            // Bad input
+            return null;
+        }
+        var iPart = 0, onePart = true;
+        // Get the splitpoint for the imaginary part
+        var splitPoint = v.indexOf('+', 1);
+        if (-1 === splitPoint) {
+            // Negative imaginary part?
+            splitPoint = v.indexOf('-', 1);
+        }
+        if (splitPoint !== -1) {
+            onePart = false;
+            v = v.substring(splitPoint, v.length);
+            iPart = parseFloat(v);
+            if (isNaN(iPart)) {
+                // Bad input
+                return null;
+            }
+        }
+        if (onePart && /i$/.test(v)) {
+            // Only an imaginary part supplied
+            iPart = rPart;
+            rPart = 0;
+        }
+        return [rPart, iPart];
+    };
+    
+    // Parses polynomial terms
+    var parseTerms = function(v) {
+        var parts = v.split(","), ret = [], pair;
+        v.split(",").forEach(function(part) {
+            pair = parseComplex(part);
+            if (!pair) {
+                // Bad value
+                return null;
+            }
+            ret.push(pair[0], pair[1]);
+        });
+        return ret;
+    };
+    
+    // Gets the parameters for fractal generation
+    var getParams = function(frac, params) {
+        var ret = true, fractalDef = F[frac];
+        if (fractalDef.isJulia) {
+            var f = Dojo.ele("julia_c"),
+                juliaC = parseComplex(f.value);
+            if (null === juliaC) {
+                f.classList.add("error");
+                ret = false;
+            }
+            else {
+                f.classList.remove("error");
+                params.juliaC = juliaC;
+            }
+        }
+        if (fractalDef.hasExponent) {
+            var expField = Dojo.ele("exponent"),
+                exponent = parseFloat(expField.value);
+            if (isNaN(exponent)) {
+                expField.classList.add("error");
+                ret = false;
+            }
+            else {
+                expField.classList.remove("error");
+                params.P = exponent;
+            }
+        }
+        if (fractalDef.hasTerms) {
+            var termsField = Dojo.ele("terms"),
+                termList = parseTerms(termsField.value);
+            if (null === termList) {
+                termsField.classList.add("error");
+                ret = false;
+            }
+            else {
+                termsField.classList.remove("error");
+                params.TERMS = termList;
+            }
+        }
+        if (fractalDef.hasR) {
+            var f = Dojo.ele("rparam"),
+                rParam = parseComplex(f.value);
+            if (null === rParam) {
+                f.classList.add("error");
+                ret = false;
+            }
+            else {
+                f.classList.remove("error");
+            }
+            if (ret) {
+                params.R = rParam;
+            }
+        }
+        if (fractalDef.hasP) {
+            var f = Dojo.ele("pparam"),
+                pParam = parseComplex(f.value);
+            if (null === pParam) {
+                f.classList.add("error");
+                ret = false;
+            }
+            else {
+                f.classList.remove("error");
+            }
+            if (ret) {
+                params.phoenixC = pParam;
+            }
+        }
+        if (fractalDef.hasStartZ) {
+            var f = Dojo.ele("startz"),
+                pParam = parseComplex(f.value);
+            if (null === pParam && f.value === "c") {
+                pParam = ["c", 0];
+            }
+            if (null === pParam) {
+                f.classList.add("error");
+                ret = false;
+            }
+            else {
+                f.classList.remove("error");
+            }
+            if (ret) {
+                params.STARTZ = pParam;
+            }
+        }
+        if (fractalDef.hasRM) {
+            // Rational map parameters
+            var expField = Dojo.ele("rm_exponent_1"),
+                exponent = parseInt(expField.value, 10);
+            if (isNaN(exponent)) {
+                expField.classList.add("error");
+                ret = false;
+            }
+            else {
+                expField.classList.remove("error");
+                params.RP = exponent;
+            }
+            expField = Dojo.ele("rm_exponent_2");
+            exponent = parseInt(expField.value, 10);
+            if (isNaN(exponent)) {
+                expField.classList.add("error");
+                ret = false;
+            }
+            else {
+                expField.classList.remove("error");
+                params.RP2 = exponent;
+            }
+            var f = Dojo.ele("rm_lambda"),
+                lParam = parseComplex(f.value);
+            if (null === lParam) {
+                f.classList.add("error");
+                ret = false;
+            }
+            else {
+                f.classList.remove("error");
+            }
+            if (ret) {
+                params.RLAMBDA = lParam;
+            }
+        }
+        return ret;
+    };
+
+    // Reset function
+    var onreset = function() {
+        zoomStack.length = 0;
+        var frac = selCtl.value || "mandel",
+            params = {};
+        if (getParams(frac, params)) {
+            Dojo.setText("rTime", "Wait", true);
+            if (frac === currentF) {
+                for (var p in customProps) {
+                    params[p] = customProps[p];
+                }
+            }
+            else {
+                // Lose any custom drawing properties
+                customProps = {};
+                currentF = frac;
+            }
+            notifyWorkers(["initialize", frac, params]);    
+            initDrawing();
+        }
+        return false;
+    };
+
+    _evt.register("playingField", "submit", onreset);
+    
+    // function to export the image in PNG format
+    var snap = function() {
+        var url = canvas.toDataURL();
+        window.open(url, "PNG");
+    }; 
+    _evt.register("exportBtn", "click", snap);
+    
+    // Zoom logic
+    // Define variables to hold mouse state
+    var xOffs = 0, yOffs = 0,
+        isDown = false, xStart = 0, yStart = 0,
+        xLast = 0, yLast = 0,
+        box = null;
+        
+    // Stack manipulation
+    var pushZoom = function() {
+        var stackObj = {
+            minX : F.minX,
+            maxX : F.maxX,
+            minY : F.minY,
+            maxY : F.maxY,
+            zoom : F.zoom
+        };
+        zoomStack.push(stackObj);
+    };
+    
+    // Undoes the last zoom operation
+    var undoZoom = function() {
+        var zoomObj;
+        if (zoomStack.length) {
+            zoomObj = zoomStack.pop();
+        }
+        else {
+            zoomObj = {
+                minX : F.minX * 2,
+                maxX : F.maxX * 2,
+                minY : F.minY * 2,
+                maxY : F.maxY * 2,
+                zoom : F.zoom / 2
+            };
+        }
+        notifyWorkers(["setState", zoomObj]);
+        Dojo.setText("rTime", "Wait", true);
+        initDrawing();
+    };
+    
+    // Click handlers for easy-zooming
+    _evt.register("zoomOutBtn", "click", undoZoom);
+    
+    // Function to calculate the x and y offsets of the canvas area
+    var calculateOffsets = function() {
+        xOffs = canvas.offsetLeft, yOffs = canvas.offsetTop;
+        // Walk up the tree recording offsets to get the total left and top offsets
+        var parent = canvas.parentElement;
+        while (parent && parent.className !== "container") {
+            xOffs += parent.offsetLeft;
+            yOffs += parent.offsetTop;
+            parent = parent.parentElement;
+        }
+    };
+    // Recalculate offsets when the window is resized
+    _evt.register(window, "resize", calculateOffsets);
+    // Calculate offsets
+    calculateOffsets();
+    
+    // Event handlers for mouse events
+    var mouseDown = function(evt) {
+        if (F.isDrawing) {
+            // Busy
+            return;
+        }
+        w = canvas.width;
+        h = canvas.height;
+        isDown = true;
+        xStart = xLast = evt.clientX;
+        yStart = yLast = evt.clientY;
+        
+        // Set the drawing style for our zoom box
+        if ("setLineDash" in ctx) {
+            ctx.setLineDash([2, 2]);
+        }
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgb(200,10,26)";
+
+        imageData = ctx.getImageData(0, 0, w, h);
+    };
+    var mouseMove = function(evt) {
+        if (isDown) {
+            xLast = evt.clientX;
+            yLast = evt.clientY;
+            var xDiff = Math.abs(xLast - xStart),
+                yDiff = Math.abs(yLast - yStart),
+                x = (xLast > xStart) ? xStart : xLast,
+                y = (yLast > yStart) ? yStart : yLast,
+                mW = w / canvas.clientWidth,
+                mH = h / canvas.clientHeight;
+            // Restore the old image data
+            ctx.putImageData(imageData, 0, 0);
+            // ... And draw a box over it
+            x -= xOffs;
+            y -= (yOffs - document.body.scrollTop);
+            x *= mW;
+            y *= mH;
+            xDiff *= mW;
+            yDiff *= mH;
+            ctx.strokeRect(x, y, xDiff, yDiff);
+            box = [x, y, xDiff, yDiff];
+        }
+    };
+    var mouseLeave = function(evt) {
+        if (isDown) {
+            isDown = false;
+            // Restore the old image data
+            ctx.putImageData(imageData, 0, 0);
+            imageData = null; 
+        }
+    };
+    // Function to draw the Julia set corresponding to a point in the Mandelbrot set
+    var makeJulia = function(evt) {
+        var frac = selCtl.value;
+        if (!(F[frac].isMandel && F[frac].hasJulia)) {
+            return;
+        }
+        isDown = false;
+        var x = evt.clientX;
+        var y = evt.clientY;
+        // Correct for element offset
+        x -= xOffs;
+        y -= (yOffs - document.body.scrollTop);
+        // Translate element co-ordinates into complex plane co-ordinates
+        // Get the current pixel width and height relative to the complex plane
+        var rSpan = F.maxX - F.minX,
+            iSpan = F.maxY - F.minY,
+            pixelW = rSpan / w,
+            pixelH = iSpan / h;
+        // Mid-point of pixel   
+        var rPart = F.minX + pixelW / 2 + x * pixelW,
+            iPart = F.maxY - y * pixelH + pixelH / 2;
+        // Set the Julia constant
+        F.juliaC = [rPart, iPart];
+            
+        // Update the select control and Julia parameters
+        selCtl.value = F[frac].hasJulia;
+        showParams();
+        // Save the current location in the Mandelbrot set and save the current stack
+        pushZoom();
+        mZoomStack = zoomStack;
+        mCustomProps = customProps;
+        zoomStack = [];
+        // Go!
+        onreset();
+    };
+    var mouseUp = function(evt) {
+        if (isDown) {
+            mouseLeave(evt);
+            
+            if (evt.shiftKey) {
+                makeJulia(evt);
+                return;
+            }
+            
+            if (!box) {
+                // Click event - create a dummy box so that nothing happens
+                box = [0, 0, 0, 0];
+            }           
+            // Get the selection area
+            var x = box[0], y = box[1], 
+                boxWidth = box[2], boxHeight = box[3],
+                xAdj = 0, yAdj = 0;
+                
+            if (!(boxWidth && boxHeight)) {
+                return;
+            } 
+            // Get the current pixel width and height relative to the complex plane
+            var rSpan = F.maxX - F.minX,
+                iSpan = F.maxY - F.minY,
+                pixelW = rSpan / w,
+                pixelH = iSpan / h;
+
+            if (pixelW <= 2 * F.epsilon) {
+                // Maximum zoom level reached
+                Dojo.ele("scale").classList.add("error");
+                return;
+            } 
+
+            // Constrain the selected area to have the same aspect ratio as the canvas;
+            // centre the selection
+            if (boxWidth >= boxHeight) {
+                var newHeight = boxWidth * h / w;
+                yAdj = ((newHeight - boxHeight) / 2) * pixelH;
+                boxHeight = newHeight;
+            }
+            else {
+                var newWidth = boxHeight * w / h;
+                xAdj = ((newWidth - boxWidth) / 2) * pixelW;
+                boxWidth = newWidth;
+            }
+            
+            // Get the new real and imaginary co-ordinates
+            var rMin = F.minX - xAdj + x * pixelW,
+                rMax = rMin + boxWidth * pixelW,
+                iMax = F.maxY - y * pixelH + yAdj,
+                iMin = iMax - boxHeight * pixelH,
+                rSpanNew = rMax - rMin,
+                ratio = rSpan / rSpanNew;
+                
+            // Store the current zoom level
+            pushZoom();
+        
+            Dojo.setText("rTime", "Wait", true);
+            var newPos = {
+                minX : rMin, maxX : rMax, minY : iMin,
+                maxY : iMax, zoom : F.zoom * ratio
+            };
+            notifyWorkers(["setState", newPos]);
+            initDrawing();
+        }
+    };
+    
+    _evt.register(canvas, ["mousedown", "touchstart"], mouseDown);
+    _evt.register(canvas, ["mousemove", "touchmove"], mouseMove);
+    _evt.register(canvas, ["mouseleave", "touchleave"], mouseLeave);
+    _evt.register(canvas, ["mouseup", "touchend"], mouseUp);
+    
+    // Allow the user to return from a Julia set to his previous place in the Mandelbrot set
+    var manReturn = function() {
+        // Copy Mandelbrot properties into the Fractal object
+        var frac = selCtl.value, fractalDef = F[frac], newFrac = F[frac].hasMandel;
+        if (!newFrac) {
+            // Shouldn't be here
+            console.log(frac + " has no hasMandel property");
+        }
+        notifyWorkers(["newFractal", newFrac]);
+        // Update the interface
+        selCtl.value = newFrac;
+        notifyWorkers(["fractalInit"]);
+        // Restore the zoom stack (which had one extra position pushed onto it)
+        zoomStack = mZoomStack;
+        mZoomStack = null;
+        // Restore any custom properties that we'd set
+        customProps = mCustomProps;
+        mCustomProps = null;
+        notifyWorkers(["setState", customProps]);
+        // Recreate the colour palette
+        notifyWorkers(["makePalette"]);
+        // Go!
+        undoZoom();
+    };
+    _evt.register("refreshBtn", "click", manReturn);
+    
+    // When the user manually changes the selection, disable the back button
+    _evt.register("fractals", "change", function() {
+        mZoomStack = null;
+        enableZoomBtn("refreshBtn", false);
+    });
+    
+    // Loads and saves the application state
+    var storageKey = "fractalState";
+    var loadState = function() {
+        var ret = false;
+        var st = "", params;
+        if (window.location.search) {
+            // Query string takes precedence
+            st = decodeURIComponent(window.location.search.replace(/^\?/, ""));
+        }
+        else {
+            st = localStorage.getItem(storageKey);
+        }
+        if (!st) {
+            return;
+        }
+        try {
+            params = JSON.parse(st);
+            var frac = params.current;
+            if (!(frac && F[frac] && F[frac].isFractal)) {
+                // Don't know what to do with this
+                return ret;
+            }
+            if (params.hasOwnProperty("zoomStack")) {
+                zoomStack = params.zoomStack;
+                delete(params.zoomStack);
+            }
+            selCtl.value = frac;
+            showParams();
+            // Restore the previous state
+            Dojo.setText("rTime", "Wait", true);
+            notifyWorkers(["initialize", frac, params]);
+            // Save custom properties
+            ["escapeValue", "iterations", "colourOptions", "boundaryFraction", "usePalette", "maxColours", "customPalette"].forEach(function(prop) {
+                if (prop in params) {
+                    customProps[prop] = params[prop];
+                }
+            });
+            currentF = frac;
+            initDrawing();
+            ret = true;
+        }
+        catch(e) {
+            console.log("loadState: " + e.message);
+        }
+        return ret;
+    };
+    var saveState = function() {
+        var stateObj = _u.filter(F, function(v, p) {
+            if (!("undefined" === typeof(v) || v.isFractal || p === "renderTime")) {
+                // Want to store this
+                return true;
+            }
+        });
+        // Add in the zoom stack
+        stateObj.zoomStack = zoomStack;
+        var stateStr = JSON.stringify(stateObj);
+        localStorage.setItem(storageKey, stateStr);
+        
+        // Remove unnecessary parameters to build up the URL
+        var fractalDef = F[stateObj.current];
+        var m = {
+            isJulia : ["juliaC"],
+            hasExponent : ["P"],
+            hasTerms : ["TERMS"],
+            hasR : ["R"],
+            hasP : ["phoenixC"],
+            hasStartZ : ["STARTZ"],
+            hasRM : ["RP", "RP2", "RLAMBDA"]
+        };
+        _u.forEach(m, function(v, p) {
+            if (!fractalDef[p]) {
+                v.forEach(function(fProp) {
+                    delete(stateObj[fProp]);
+                });
+            }
+        });
+        
+        // Suppress defaults
+        _u.forEach(fractalDef, function(v, p) {
+            if (stateObj.hasOwnProperty(p) && stateObj[p] === v) {
+                delete(stateObj[p]);
+            }
+        });
+        stateStr = JSON.stringify(stateObj);
+        
+        // Generate URLs for the new state
+        var imgUrl = window.location.href.replace(/\?.*$/, "") + "?" + 
+            encodeURIComponent(stateStr);
+        var urlLocations = [
+            "imageUrl"
+        ];
+        urlLocations.forEach(function(eId, i, a) {
+            Dojo.setText(eId, imgUrl, true);
+        });
+    };
+    
+    // Creates palette choices
+    var makePaletteOptions = function(pList) {
+        var selCtl = Dojo.ele("usePalette"), i, pObj;
+        pList.forEach(function(pObj) {
+            // Data returned from the library is [value,name]
+            selCtl.add(new Option(pObj[1], pObj[0]), selCtl.length);
+        });
+    };
+    
+    // Handle messages from the worker
+    var initialized = false;
+    var response = function(evt) {
+        var data = evt.data;
+        if (data.length < 2) {
+            return false;
+        }
+        var id = data.shift(), cmd = data.shift(), p, st;
+        switch (cmd) {
+            case "getFractals":
+                makeSelectOptions(data);
+                break;
+                
+            case "getPalettes":
+                makePaletteOptions(data);
+                break;
+                
+            case "getState":
+                if (id === 0) {
+                    st = data[0];
+                    for (p in st) {
+                        F[p] = st[p];
+                    }
+                    report();
+                    showParams();
+                    if (!initialized) {
+                        initialized = true;
+                        if (!loadState()) {
+                            onreset();
+                        }
+                    }
+                    else {
+                        saveState();
+                    }
+                }
+                break;
+                
+            case "pixelData":
+                updateImage(data[0], data[1]);
+                break;
+                
+            case "paletteString":
+                Dojo.ele("customPaletteText").value = data[0];
+                break;
+                
+            case "paletteCheckResult":
+                if (true === data[0]) {
+                    Dojo.setText("msgReport", "The palette syntax is correct", true);
+                    Popup.show("msgDlg");
+                }
+                break;
+                
+            case "error":
+                var errStr = data[0];
+                if ("string" !== typeof(errStr)) {
+                    errStr = JSON.stringify(errStr, null, 2);
+                }
+                Dojo.setText("errReport", errStr, true);
+                Popup.show("errDlg");
+                enableInterface();
+                break;
+                
+            case "log":
+                console.log(id + ": " + JSON.stringify(data[0]));
+                break;
+                
+        }
+    };
+    for (i = 0; i < TCOUNT; i++) {
+        Dojo.listen(workers[i], "message", response);
+    }
+    
+    // Popup support
+    var _showDlg = function(srcLink, dlgId) {
+        srcLink.blur();
+        Popup.show(dlgId);
+        return false;
+    };
+    
+    _evt.register("shareCtl", "click", function(evt) {
+        return _showDlg(evt.target, "shareDlg");
+    });
+    
+    _evt.register("advancedCtl", "click", function(evt) {
+        if (F.colourOptions & 1) {
+            Dojo.ele("extColouring_dwell").checked = true;
+        }
+        else if (F.colourOptions & 8) {
+            Dojo.ele("extColouring_basin").checked = true;
+        }
+        else {
+            Dojo.ele("extColouring_none").checked = true;
+        }
+        Dojo.ele("reverseVideo").checked = !!(F.colourOptions & 4);
+        Dojo.ele("usePalette").value = F.usePalette;
+        Dojo.ele("boundaryFraction").value = F.boundaryFraction;
+        Dojo.ele("escapeValue").value = F.escapeValue;
+        Dojo.ele("iterations").value = F.iterations;
+        Dojo.ele("imageWidth").value = canvas.width;
+        Dojo.ele("imageHeight").value = canvas.height;
+        Dojo.ele("antialias").checked = F.antialias;
+        Dojo.ele("maxColours").value = F.maxColours;
+        Dojo.ele("colourAngle").value = F.colourAngle;
+        Dojo.ele("customPaletteText").value = F.customPalette;
+        
+        Dojo.ele("pixelsLeft").value = 0;
+        Dojo.ele("pixelsUp").value = 0;
+        
+        var centreX = (F.maxX / 2 + F.minX / 2).toLocaleString(navigator.language, { maximumFractionDigits : 6 }),
+            centreY = (F.maxY / 2 + F.minY / 2).toLocaleString(navigator.language, { maximumFractionDigits : 6 });
+        
+        Dojo.ele("centrePoint").value = assembleComplex([centreX, centreY]);
+        Dojo.ele("zoomValue").value = F.zoom.toLocaleString(navigator.language, 
+            { maximumFractionDigits : 2, useGrouping : false });
+        return _showDlg(evt.target, "advancedDlg");
+    });
+    
+    _evt.register("exportPaletteBtn", "click", function(evt) {
+        var pId = Dojo.ele("usePalette").value;
+        if (pId) {
+            workers[0].postMessage([0, "exportPalette", pId]);
+        }
+    });
+    
+    _evt.register("checkPaletteBtn", "click", function(evt) {
+        var pStr = Dojo.ele("customPaletteText").value;
+        if (pStr) {
+            workers[0].postMessage([0, "checkPalette", pStr]);
+        }
+    });
+    
+    // Object to update the image height based on the width
+    var wUpdater = {
+        timeout : null,
+        
+        update : function() {
+            var w = Dojo.ele("imageWidth").value;
+            if (/^\d+$/.test(w) && 0 === w % 4 && w > 0) {
+                Dojo.ele("imageHeight").value = 3 * w / 4;
+            }
+            wUpdater.timeout = null;
+        },
+        
+        _update : function() {
+            if (wUpdater.timeout) {
+                clearTimeout(wUpdater.timeout);
+            }
+            wUpdater.timeout = setTimeout(wUpdater.update, 100);
+        }
+    };
+    _evt.register("imageWidth", "keypress", wUpdater._update);
+    
+    // Submit handler for advanced options
+    var advancedSubmit = function() {
+        var cOpts = 0;
+        if (Dojo.ele("extColouring_dwell").checked) {
+            cOpts |= 1;
+        }
+        else if (Dojo.ele("extColouring_basin").checked) {
+            cOpts |= 8;
+        }
+        if (Dojo.ele("reverseVideo").checked) {
+            cOpts |= 4;
+        }
+        var bf = parseFloat(Dojo.ele("boundaryFraction").value, 10);
+        if (bf <= 0) {
+            bf = F.boundaryFraction;
+        }
+        var ev = parseFloat(Dojo.ele("escapeValue").value);
+        if (F.escapeValue >= 2 && ev < 2) {
+            // Divergent - too small
+            ev = F.escapeValue;
+        }
+        else if (F.escapeValue < 1 && ev >= 1) {
+            // Convergent - too big
+            ev = F.escapeValue;
+        }
+        
+        var iter = parseInt(Dojo.ele("iterations").value, 10);
+        if (iter < 1) {
+            iter = F.iterations;
+        }
+        
+        var maxColours = parseInt(Dojo.ele("maxColours").value, 10);
+        if (maxColours < 0) {
+            maxColours = F.maxColours;
+        }
+        
+        // Set the canvas dimensions if the value isn't dumb
+        var w = parseInt(Dojo.ele("imageWidth").value, 10);
+        if (/^\d+$/.test(w) && 0 === w % 4 && w > 0) {
+            canvas.width = w;
+            canvas.height = parseInt(Dojo.ele("imageHeight").value, 10);
+        }
+        
+        // Colour angle
+        var theta = parseFloat(Dojo.ele("colourAngle").value);
+        if (!isFinite(theta) || theta < 0 || theta >= 366) {
+            theta = F.colourAngle;
+        }
+        
+        // Build up new properties
+        var currPalette = customProps.usePalette;
+        customProps = {
+            colourOptions : cOpts,
+            boundaryFraction : bf,
+            escapeValue : ev,
+            iterations : iter,
+            maxColours : maxColours,
+            usePalette : Dojo.ele("usePalette").value,
+            antialias : Dojo.ele("antialias").checked,
+            colourAngle : theta,
+            customPalette : Dojo.ele("customPaletteText").value
+        };
+        
+        if (customProps.customPalette) {
+            // Custom palette takes priority over built-in
+            customProps.usePalette = "";
+        }
+        
+        // Get any change in zoom level
+        var newZoom = F.zoom;
+        var oldZoomValue = F.zoom.toLocaleString(navigator.language, 
+            { maximumFractionDigits : 2, useGrouping : false });
+        var newZoomValue = Dojo.ele("zoomValue").value;
+        if (oldZoomValue !== newZoomValue) {
+            var _newZoom = parseFloat(newZoomValue);
+            if (_newZoom > 0) {
+                newZoom = _newZoom;
+            }
+        }        
+        // Get viewport adjustments; pixel shifting takes priority over re-centering
+        var adjX = 0, adjY = 0;
+        var centreX = F.maxX / 2 + F.minX / 2, centreY = F.maxY / 2 + F.minY / 2;
+        if (newZoom !== F.zoom) {
+            // Adjust the current viewport
+            var halfWidth = ((F.maxX - F.minX) * F.zoom) / (2 * newZoom),
+                halfHeight = ((F.maxY - F.minY) * F.zoom) / (2 * newZoom);
+            F.maxX = centreX + halfWidth;
+            F.minX = centreX - halfWidth;
+            F.maxY = centreY + halfHeight;
+            F.minY = centreY - halfHeight;
+        }
+        var lPix = parseInt(Dojo.ele("pixelsLeft").value, 10);
+        if (!(isNaN(lPix) || lPix === 0)) {
+            adjX = lPix * (F.maxX - F.minX) / canvas.width;
+        }
+        var uPix = parseInt(Dojo.ele("pixelsUp").value, 10);
+        if (!(isNaN(uPix) || uPix === 0)) {
+            adjY = -uPix * (F.maxY - F.minY) / canvas.height;
+        }
+        
+        if (!(adjX || adjY)) {
+            // See whether a new centre point has been entered
+            var newCentreX = centreX, newCentreY = centreY;
+            var currentCentreVal = assembleComplex([
+                centreX.toLocaleString(navigator.language, { maximumFractionDigits : 6 }), 
+                centreY.toLocaleString(navigator.language, { maximumFractionDigits : 6 })
+            ]);
+            var newCentreVal = Dojo.ele("centrePoint").value;
+            if (newCentreVal !== currentCentreVal) {
+                var parts = parseComplex(newCentreVal);
+                if (null !== parts) {
+                    newCentreX = parts[0];
+                    newCentreY = parts[1];
+                }
+            }
+            if (newCentreX !== centreX) {
+                adjX = newCentreX - centreX;
+            }
+            if (newCentreY !== centreY) {
+                adjY = newCentreY - centreY;
+            }
+        }
+        var newPos = {
+            minX : F.minX + adjX, maxX : F.maxX + adjX, minY : F.minY + adjY,
+            maxY : F.maxY + adjY, zoom : newZoom
+        };
+        _u.forEach(customProps, function(v, p) {
+            newPos[p] = v;
+        });
+        notifyWorkers(["setState", newPos]);        
+        notifyWorkers(["makePalette"]);
+        initDrawing();
+        Popup.hide('advancedDlg');
+        return false;
+    };
+    _evt.register("advancedOptions", "submit", advancedSubmit);
+    
+    _evt.register("aboutCtl", "click", function(evt) {
+        Dojo.setText("helpHdr", "About This Application", true);
+        Dojo.ele("helpContent").src = "./about.html";
+        return _showDlg(evt.target, "helpDlg");
+    });
+
+    _evt.register("helpCtl", "click", function(evt) {
+        Dojo.setText("helpHdr", "Help", true);
+        Dojo.ele("helpContent").src = "./help.html";
+        return _showDlg(evt.target, "helpDlg");
+    });
+
+    // Get the selections and kick things off
+    worker.postMessage([0, "getFractals"]);
+    worker.postMessage([0, "getPalettes"]);
+    worker.postMessage([0, "getState"]);
+};
+        </script>
+    </body>
+</html>
